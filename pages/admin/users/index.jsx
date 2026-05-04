@@ -75,6 +75,11 @@ export default function UsersList() {
   return (
     <AdminLayout title="Users">
       <ListShell
+        csvUrl={`/api/admin/end-users?${(() => {
+          const p = new URLSearchParams(params);
+          p.set("format", "csv");
+          return p.toString();
+        })()}`}
         filters={
           <>
             <TextFilter

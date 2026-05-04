@@ -1,9 +1,13 @@
 import { useState } from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import AdminLayout from "@/components/admin-layout";
-import { DataTable, StatusPill, MonoAddress } from "@/components/data-table";
-import { fetcher } from "@/lib/api";
+import {
+  DataTable,
+  StatusPill,
+  MonoAddress,
+  BulkActionBar,
+} from "@/components/data-table";
+import api, { fetcher } from "@/lib/api";
 
 const FilterSelect = ({ label, value, onChange, options }) => (
   <label className="flex flex-col gap-1">
@@ -33,6 +37,7 @@ const TRI = [
 export default function CollectionsList() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [selection, setSelection] = useState(new Set());
   const [filters, setFilters] = useState({
     isDrop: "all",
     isFeatured: "all",
@@ -50,11 +55,39 @@ export default function CollectionsList() {
     if (v && v !== "all") params.set(k, v);
   }
 
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     `/admin/collections?${params.toString()}`,
     fetcher,
     { keepPreviousData: true }
   );
+
+  const bulk = async (flag, value, label) => {
+    const addresses = [...selection];
+    if (
+      !confirm(
+        `${label} ${addresses.length} collection(s)? Bulk action — double-check the selection.`
+      )
+    )
+      return;
+    try {
+      const { data: result } = await api.post("/admin/collections/bulk-flags", {
+        addresses,
+        flag,
+        value,
+      });
+      setSelection(new Set());
+      mutate();
+      alert(`${result.updated} collection(s) updated.`);
+    } catch (err) {
+      alert(err?.response?.data?.error || "Bulk update failed");
+    }
+  };
+
+  const exportCsv = () => {
+    const csvParams = new URLSearchParams(params);
+    csvParams.set("format", "csv");
+    window.open(`/api/admin/collections?${csvParams.toString()}`, "_blank");
+  };
 
   const columns = [
     {
@@ -81,21 +114,9 @@ export default function CollectionsList() {
     },
     { key: "network", label: "Network" },
     { key: "type", label: "Type" },
-    {
-      key: "is_drop",
-      label: "Drop",
-      render: (r) => <StatusPill active={r.is_drop} />,
-    },
-    {
-      key: "is_published",
-      label: "Pub",
-      render: (r) => <StatusPill active={r.is_published} />,
-    },
-    {
-      key: "is_featured",
-      label: "Featured",
-      render: (r) => <StatusPill active={r.is_featured} />,
-    },
+    { key: "is_drop", label: "Drop", render: (r) => <StatusPill active={r.is_drop} /> },
+    { key: "is_published", label: "Pub", render: (r) => <StatusPill active={r.is_published} /> },
+    { key: "is_featured", label: "Featured", render: (r) => <StatusPill active={r.is_featured} /> },
     { key: "total_nfts", label: "Items", align: "right" },
     {
       key: "floor_price",
@@ -109,84 +130,75 @@ export default function CollectionsList() {
   return (
     <AdminLayout title="Collections">
       <div className="flex flex-col gap-4">
-        {/* Filter strip */}
-        <div className="flex flex-wrap gap-3 items-end">
-          <label className="flex flex-col gap-1 flex-1 min-w-[260px]">
-            <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-600">
-              Search name or address
-            </span>
-            <input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
+        <div className="flex flex-wrap gap-3 items-end justify-between">
+          <div className="flex flex-wrap gap-3 items-end">
+            <label className="flex flex-col gap-1 flex-1 min-w-[260px]">
+              <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-600">
+                Search name or address
+              </span>
+              <input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search…"
+                className="bg-ink-800 border border-white/[0.06] px-3 py-1.5 text-[13px] focus:outline-none focus:border-white/30"
+              />
+            </label>
+            <FilterSelect label="Drop" value={filters.isDrop} onChange={(v) => { setFilters((f) => ({ ...f, isDrop: v })); setPage(1); }} options={TRI} />
+            <FilterSelect label="Featured" value={filters.isFeatured} onChange={(v) => { setFilters((f) => ({ ...f, isFeatured: v })); setPage(1); }} options={TRI} />
+            <FilterSelect label="Historical" value={filters.isHistorical} onChange={(v) => { setFilters((f) => ({ ...f, isHistorical: v })); setPage(1); }} options={TRI} />
+            <FilterSelect label="Deactivated" value={filters.isDeactivated} onChange={(v) => { setFilters((f) => ({ ...f, isDeactivated: v })); setPage(1); }} options={TRI} />
+            <FilterSelect
+              label="Type"
+              value={filters.type}
+              onChange={(v) => {
+                setFilters((f) => ({ ...f, type: v }));
                 setPage(1);
               }}
-              placeholder="Search…"
-              className="bg-ink-800 border border-white/[0.06] px-3 py-1.5 text-[13px] focus:outline-none focus:border-white/30"
+              options={[
+                { value: "all", label: "Any" },
+                { value: "ERC721", label: "ERC721" },
+                { value: "ERC1155", label: "ERC1155" },
+              ]}
             />
-          </label>
-          <FilterSelect
-            label="Drop"
-            value={filters.isDrop}
-            onChange={(v) => {
-              setFilters((f) => ({ ...f, isDrop: v }));
-              setPage(1);
-            }}
-            options={TRI}
-          />
-          <FilterSelect
-            label="Featured"
-            value={filters.isFeatured}
-            onChange={(v) => {
-              setFilters((f) => ({ ...f, isFeatured: v }));
-              setPage(1);
-            }}
-            options={TRI}
-          />
-          <FilterSelect
-            label="Historical"
-            value={filters.isHistorical}
-            onChange={(v) => {
-              setFilters((f) => ({ ...f, isHistorical: v }));
-              setPage(1);
-            }}
-            options={TRI}
-          />
-          <FilterSelect
-            label="Deactivated"
-            value={filters.isDeactivated}
-            onChange={(v) => {
-              setFilters((f) => ({ ...f, isDeactivated: v }));
-              setPage(1);
-            }}
-            options={TRI}
-          />
-          <FilterSelect
-            label="Type"
-            value={filters.type}
-            onChange={(v) => {
-              setFilters((f) => ({ ...f, type: v }));
-              setPage(1);
-            }}
-            options={[
-              { value: "all", label: "Any" },
-              { value: "ERC721", label: "ERC721" },
-              { value: "ERC1155", label: "ERC1155" },
-            ]}
-          />
+          </div>
+          <button
+            onClick={exportCsv}
+            className="px-3 py-1.5 text-[12px] border border-white/[0.06] hover:bg-white/[0.04] cursor-pointer"
+          >
+            Download CSV
+          </button>
         </div>
 
-        {/* Table */}
+        <BulkActionBar
+          count={selection.size}
+          onClear={() => setSelection(new Set())}
+          actions={[
+            { label: "Feature", onClick: () => bulk("is_featured", true, "Mark featured") },
+            { label: "Unfeature", onClick: () => bulk("is_featured", false, "Unfeature") },
+            { label: "Mark historical", onClick: () => bulk("is_historical", true, "Mark historical") },
+            {
+              label: "Deactivate",
+              danger: true,
+              onClick: () => bulk("is_deactivated", true, "Soft-hide"),
+            },
+          ]}
+        />
+
         <DataTable
           columns={columns}
           rows={data?.collections || []}
           emptyMessage={isLoading ? "Loading…" : "No collections match these filters"}
+          selection={selection}
+          onSelectionChange={setSelection}
+          selectionKey={(r) => r.address}
           onRowClick={(row) => {
             window.location.href = `/admin/collections/${row.address}`;
           }}
         />
 
-        {/* Footer / pagination */}
         <div className="flex items-center justify-between text-[12px] text-neutral-500">
           <span>
             {data

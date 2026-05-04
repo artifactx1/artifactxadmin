@@ -61,6 +61,11 @@ export default function NftsList() {
   return (
     <AdminLayout title="NFTs">
       <ListShell
+        csvUrl={`/api/admin/nfts?${(() => {
+          const p = new URLSearchParams(params);
+          p.set("format", "csv");
+          return p.toString();
+        })()}`}
         filters={
           <>
             <TextFilter

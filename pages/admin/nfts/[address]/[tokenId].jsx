@@ -102,6 +102,32 @@ export default function NftDetail() {
             >
               {showAlchemy ? "Hide" : "Show"} raw Alchemy response
             </button>
+            <button
+              onClick={async () => {
+                if (
+                  !nft.is_hidden &&
+                  !confirm(
+                    "Soft-hide this NFT? It'll be excluded from public surfaces. You can restore from Takedowns."
+                  )
+                )
+                  return;
+                try {
+                  await api.patch(`/admin/nfts/${address}/${tokenId}/flags`, {
+                    is_hidden: !nft.is_hidden,
+                  });
+                  mutate();
+                } catch (err) {
+                  alert(err?.response?.data?.error || "Failed");
+                }
+              }}
+              className={`px-3 py-1.5 text-[12px] border cursor-pointer ${
+                nft.is_hidden
+                  ? "border-red-900/60 bg-red-900/40 text-red-200"
+                  : "border-white/[0.06] hover:bg-white/[0.04]"
+              }`}
+            >
+              {nft.is_hidden ? "Hidden — click to unhide" : "Hide NFT"}
+            </button>
           </div>
         </div>
 

@@ -145,6 +145,42 @@ export default function CollectionDetail() {
           </div>
         </div>
 
+        {/* Background-job actions */}
+        <div className="bg-ink-900 border border-white/[0.06] p-5 flex flex-col gap-3">
+          <h2 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500">
+            Maintenance jobs
+          </h2>
+          <p className="text-[12px] text-neutral-600">
+            Long ops queue as background jobs and stream progress in System &gt; Background jobs.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <JobButton
+              label="Reindex NFTs"
+              kind="collection.reindex"
+              params={{ address: c.address, chain: c.network, type: c.type }}
+              confirm={`Reindex every NFT for ${c.name}? Inserts are idempotent so this is safe to re-run.`}
+            />
+            <JobButton
+              label="Refresh stats from Alchemy"
+              kind="collection.refresh-stats"
+              params={{ address: c.address, network: c.network }}
+            />
+            <JobButton
+              label="Refresh metadata for every NFT"
+              kind="collection.refresh-metadata"
+              params={{ address: c.address, network: c.network }}
+              confirm={`Trigger Alchemy refresh for every NFT in ${c.name}? Can take many minutes for large collections.`}
+            />
+            <JobButton
+              label="Cancel all listings"
+              kind="collection.cancel-all-listings"
+              params={{ address: c.address }}
+              confirm={`Cancel every active listing on ${c.name}? Cannot be undone.`}
+              danger
+            />
+          </div>
+        </div>
+
         {/* Drop-specific shortcut */}
         {c.is_drop && (
           <div className="bg-ink-900 border border-white/[0.06] p-5">
@@ -164,5 +200,32 @@ export default function CollectionDetail() {
         )}
       </div>
     </AdminLayout>
+  );
+}
+
+// Single-click job launcher. Confirms (if asked), POSTs /admin/jobs, then
+// kicks the user over to the jobs page so they can watch progress.
+function JobButton({ label, kind, params, confirm: confirmMsg, danger }) {
+  const router = useRouter();
+  const onClick = async () => {
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    try {
+      await api.post("/admin/jobs", { kind, params });
+      router.push("/admin/system/jobs");
+    } catch (err) {
+      alert(err?.response?.data?.error || "Failed to enqueue job");
+    }
+  };
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 text-[12px] border cursor-pointer ${
+        danger
+          ? "border-red-900/60 text-red-300 hover:bg-red-900/20"
+          : "border-white/[0.06] hover:bg-white/[0.04]"
+      }`}
+    >
+      {label}
+    </button>
   );
 }

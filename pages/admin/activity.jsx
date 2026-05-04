@@ -122,6 +122,11 @@ export default function Activity() {
       )}
 
       <ListShell
+        csvUrl={`/api/admin/activity?${(() => {
+          const p = new URLSearchParams(params);
+          p.set("format", "csv");
+          return p.toString();
+        })()}`}
         filters={
           <>
             <SelectFilter

@@ -2,6 +2,9 @@ import { DataTable } from "./data-table";
 
 // Reusable list-page shell. Filter strip, table, footer pagination.
 // Module pages compose this so they don't re-implement the same chrome.
+//
+// `csvUrl` enables the Download CSV button — usually the same query string as
+// the list endpoint with `&format=csv` appended.
 export function ListShell({
   filters,
   columns,
@@ -15,19 +18,41 @@ export function ListShell({
   onRowClick,
   emptyMessage,
   extraTopRight,
+  csvUrl,
+  selection,
+  onSelectionChange,
+  selectionKey,
+  bulkBar,
 }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-3 items-end justify-between">
         <div className="flex flex-wrap gap-3 items-end">{filters}</div>
-        {extraTopRight}
+        <div className="flex items-center gap-2">
+          {extraTopRight}
+          {csvUrl && (
+            <a
+              href={csvUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="px-3 py-1.5 text-[12px] border border-white/[0.06] hover:bg-white/[0.04] cursor-pointer"
+            >
+              Download CSV
+            </a>
+          )}
+        </div>
       </div>
+
+      {bulkBar}
 
       <DataTable
         columns={columns}
         rows={rows || []}
         emptyMessage={isLoading ? "Loading…" : emptyMessage || "No results"}
         onRowClick={onRowClick}
+        selection={selection}
+        onSelectionChange={onSelectionChange}
+        selectionKey={selectionKey}
       />
 
       <div className="flex items-center justify-between text-[12px] text-neutral-500">
