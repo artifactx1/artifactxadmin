@@ -10,11 +10,13 @@ export default function UsersList() {
   const [search, setSearch] = useState("");
   const [isVerified, setIsVerified] = useState("all");
   const [isSuspended, setIsSuspended] = useState("all");
+  const [isDeactivated, setIsDeactivated] = useState("all");
 
   const params = new URLSearchParams({ page: String(page), pageSize: "50" });
   if (search.trim()) params.set("search", search.trim());
   if (isVerified !== "all") params.set("isVerified", isVerified);
   if (isSuspended !== "all") params.set("isSuspended", isSuspended);
+  if (isDeactivated !== "all") params.set("isDeactivated", isDeactivated);
 
   const { data, error, isLoading } = useSWR(
     `/admin/end-users?${params.toString()}`,
@@ -46,28 +48,27 @@ export default function UsersList() {
       ),
     },
     { key: "email", label: "Email" },
+    { key: "followers", label: "Followers", align: "right" },
     {
       key: "is_verified",
-      label: "Verified",
+      label: "Verified artist",
       render: (r) => <StatusPill active={r.is_verified} />,
     },
     {
       key: "is_suspended",
       label: "Suspended",
       render: (r) => (
-        <StatusPill
-          active={r.is_suspended}
-          activeClass="bg-red-900/40 text-red-300"
-        />
+        <StatusPill active={r.is_suspended} activeClass="bg-red-900/40 text-red-300" />
       ),
     },
     {
-      key: "created_at",
-      label: "Created",
+      key: "is_deactivated",
+      label: "Deactivated",
       render: (r) => (
-        <span className="text-neutral-500 text-[11px]">
-          {r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}
-        </span>
+        <StatusPill
+          active={r.is_deactivated}
+          activeClass="bg-red-900/40 text-red-300"
+        />
       ),
     },
   ];
@@ -105,6 +106,15 @@ export default function UsersList() {
               value={isSuspended}
               onChange={(v) => {
                 setIsSuspended(v);
+                setPage(1);
+              }}
+              options={TRI_OPTIONS}
+            />
+            <SelectFilter
+              label="Deactivated"
+              value={isDeactivated}
+              onChange={(v) => {
+                setIsDeactivated(v);
                 setPage(1);
               }}
               options={TRI_OPTIONS}

@@ -91,9 +91,14 @@ export default function UserDetail() {
           </h2>
           <div className="flex flex-wrap gap-2">
             <FlagToggle
-              label="Verified"
+              label="Verified artist"
               value={!!u.is_verified}
               onChange={(v) => updateFlag("is_verified", v)}
+            />
+            <FlagToggle
+              label="Featured artist"
+              value={!!u.is_featured}
+              onChange={(v) => updateFlag("is_featured", v)}
             />
             <FlagToggle
               label="Suspended"
@@ -107,6 +112,21 @@ export default function UserDetail() {
                 )
                   return;
                 updateFlag("is_suspended", v);
+              }}
+              danger
+            />
+            <FlagToggle
+              label="Deactivated"
+              value={!!u.is_deactivated}
+              onChange={(v) => {
+                if (
+                  !u.is_deactivated &&
+                  !confirm(
+                    "Deactivate this user? They will be hidden from public surfaces."
+                  )
+                )
+                  return;
+                updateFlag("is_deactivated", v);
               }}
               danger
             />
