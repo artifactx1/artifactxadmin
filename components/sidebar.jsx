@@ -47,6 +47,8 @@ const NAV = [
       { label: "Background jobs", href: "/admin/system/jobs" },
       { label: "Migrations", href: "/admin/system/migrations" },
       { label: "Admin users", href: "/admin/system/admins" },
+      { label: "SQL console", href: "/admin/system/sql" },
+      { label: "Two-factor auth", href: "/admin/system/2fa" },
     ],
   },
   { label: "Audit log", href: "/admin/audit" },
