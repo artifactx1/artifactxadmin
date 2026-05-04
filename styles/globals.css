@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#__next {
+  background: #0a0a0a;
+  color: #e6e6ef;
+  min-height: 100vh;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Form controls inherit dark theme. */
+input,
+select,
+textarea,
+button {
+  color: inherit;
+  background: transparent;
+}
+
+input::placeholder {
+  color: #525252;
+}
