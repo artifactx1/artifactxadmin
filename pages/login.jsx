@@ -17,7 +17,19 @@ export default function Login() {
       await api.post("/admin/login", { username, password });
       router.replace("/admin/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || "Login failed");
+      // Surface the real reason. Network errors won't have err.response, so
+      // fall back to err.message; otherwise show whatever the server sent
+      // plus the status code so the user (and us) can debug from the UI.
+      const status = err?.response?.status;
+      const serverMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        (typeof err?.response?.data === "string" ? err.response.data : null);
+      if (status) {
+        setError(`${status} — ${serverMsg || "request failed"}`);
+      } else {
+        setError(`Network error — ${err.message || "could not reach server"}`);
+      }
     } finally {
       setSubmitting(false);
     }

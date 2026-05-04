@@ -5,8 +5,8 @@ export default function Boards() {
   return (
     <AdminLayout title="Boards">
       <Placeholder
-        title="User boards"
-        description="Curated boards. Soft-delete spam, feature on home."
+        title="User-curated boards"
+        description="Soft-delete + feature-on-home actions land in a follow-up. Tracked in ADMIN_PANEL_SPEC.md §4.10.2."
       />
     </AdminLayout>
   );

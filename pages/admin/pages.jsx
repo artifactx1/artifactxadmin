@@ -6,7 +6,7 @@ export default function PagesList() {
     <AdminLayout title="Page Builder pages">
       <Placeholder
         title="Page Builder pages"
-        description="All page_builder_pages rows. Admin override edit, publish / unpublish, revert."
+        description="The page-builder editor lives in creator-studio. Admin override of pages requires wiring through the existing /pageBuilder/* endpoints — implementing list + admin-edit override is a follow-up. Tracked in ADMIN_PANEL_SPEC.md §4.10.1."
       />
     </AdminLayout>
   );
