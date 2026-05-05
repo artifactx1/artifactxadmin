@@ -47,8 +47,8 @@ export function DataTable({
   };
 
   return (
-    <div className="border border-white/[0.06] bg-ink-900 overflow-x-auto">
-      <table className="w-full text-[13px]">
+    <div className="border border-white/[0.06] bg-ink-900 overflow-x-auto -mx-3 md:mx-0">
+      <table className="w-full text-[13px] min-w-[640px]">
         <thead className="bg-ink-800">
           <tr>
             {selectable && (
@@ -64,7 +64,7 @@ export function DataTable({
             {columns.map((c) => (
               <th
                 key={c.key}
-                className={`px-3 py-2 text-left font-semibold text-[10px] uppercase tracking-[0.18em] text-neutral-500 ${
+                className={`px-3 py-2 text-left font-semibold text-[10px] uppercase tracking-[0.18em] text-neutral-500 whitespace-nowrap ${
                   c.align === "right" ? "text-right" : ""
                 }`}
                 style={c.width ? { width: c.width } : undefined}
@@ -148,27 +148,29 @@ export function MonoAddress({ value }) {
 export function BulkActionBar({ count, actions, onClear }) {
   if (!count) return null;
   return (
-    <div className="bg-ink-800 border border-white/[0.06] px-4 py-2 flex items-center gap-3 sticky top-12 z-20">
+    <div className="bg-ink-800 border border-white/[0.06] px-3 md:px-4 py-2 flex flex-wrap items-center gap-2 md:gap-3 sticky top-12 z-20">
       <span className="text-[12px] text-neutral-300">
         <strong className="text-white">{count}</strong> selected
       </span>
-      <div className="flex-1" />
-      {actions.map((a) => (
-        <button
-          key={a.label}
-          onClick={a.onClick}
-          className={`px-3 py-1.5 text-[12px] border cursor-pointer ${
-            a.danger
-              ? "border-red-900/60 text-red-300 hover:bg-red-900/20"
-              : "border-white/[0.06] hover:bg-white/[0.04]"
-          }`}
-        >
-          {a.label}
-        </button>
-      ))}
+      <div className="hidden md:block flex-1" />
+      <div className="flex items-center gap-2 flex-wrap order-3 md:order-none w-full md:w-auto">
+        {actions.map((a) => (
+          <button
+            key={a.label}
+            onClick={a.onClick}
+            className={`px-3 py-1.5 text-[12px] border cursor-pointer ${
+              a.danger
+                ? "border-red-900/60 text-red-300 hover:bg-red-900/20"
+                : "border-white/[0.06] hover:bg-white/[0.04]"
+            }`}
+          >
+            {a.label}
+          </button>
+        ))}
+      </div>
       <button
         onClick={onClear}
-        className="text-neutral-500 hover:text-white text-[12px] cursor-pointer"
+        className="text-neutral-500 hover:text-white text-[12px] cursor-pointer ml-auto md:ml-0"
       >
         Clear
       </button>

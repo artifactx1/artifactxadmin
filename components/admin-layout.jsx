@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { useAdminSession } from "@/lib/auth";
 import Sidebar from "./sidebar";
 import Topbar from "./topbar";
@@ -6,6 +8,13 @@ import Topbar from "./topbar";
 // passes the resolved admin into children via render-prop if needed.
 export default function AdminLayout({ title, children }) {
   const { admin, loading } = useAdminSession();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { pathname } = useRouter();
+
+  // Close the mobile drawer when the route changes.
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
 
   if (loading) {
     return (
@@ -22,16 +31,16 @@ export default function AdminLayout({ title, children }) {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar />
+      <Sidebar open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar admin={admin} />
+        <Topbar admin={admin} onMenuClick={() => setDrawerOpen(true)} />
         <main className="flex-1 overflow-y-auto">
           {title && (
-            <div className="border-b border-white/[0.06] bg-ink-900 px-6 py-4">
+            <div className="border-b border-white/[0.06] bg-ink-900 px-4 md:px-6 py-3 md:py-4">
               <h1 className="text-base font-semibold text-white">{title}</h1>
             </div>
           )}
-          <div className="p-6">{children}</div>
+          <div className="p-3 md:p-6">{children}</div>
         </main>
       </div>
     </div>

@@ -63,9 +63,10 @@ const SectionLabel = ({ children }) => (
   </span>
 );
 
-const NavLink = ({ item, pathname, indent = false }) => (
+const NavLink = ({ item, pathname, indent = false, onNavigate }) => (
   <Link
     href={item.href}
+    onClick={onNavigate}
     className={`block px-3 py-1.5 text-[13px] transition-colors ${
       indent ? "pl-6" : ""
     } ${
@@ -78,29 +79,76 @@ const NavLink = ({ item, pathname, indent = false }) => (
   </Link>
 );
 
-export default function Sidebar() {
+// Sidebar is a static column on md+ screens and a slide-in drawer on
+// smaller viewports. AdminLayout owns the open state.
+export default function Sidebar({ open = false, onClose }) {
   const { pathname } = useRouter();
   return (
-    <nav className="w-[240px] shrink-0 border-r border-white/[0.06] bg-ink-900 flex flex-col py-3 overflow-y-auto">
-      <Link href="/admin/dashboard" className="px-3 mb-3 flex flex-col gap-0.5">
-        <span className="text-[10px] uppercase tracking-[0.28em] text-neutral-600">
-          Artifactx
-        </span>
-        <span className="text-sm font-bold text-white">Admin</span>
-      </Link>
+    <>
+      {/* Mobile backdrop */}
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity md:hidden ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden="true"
+      />
 
-      {NAV.map((item) =>
-        item.children ? (
-          <div key={item.label} className="flex flex-col">
-            <SectionLabel>{item.label}</SectionLabel>
-            {item.children.map((c) => (
-              <NavLink key={c.href} item={c} pathname={pathname} indent />
-            ))}
-          </div>
-        ) : (
-          <NavLink key={item.href} item={item} pathname={pathname} />
-        )
-      )}
-    </nav>
+      <nav
+        className={`
+          fixed md:static inset-y-0 left-0 z-50
+          w-[260px] md:w-[240px] shrink-0
+          border-r border-white/[0.06] bg-ink-900 flex flex-col py-3
+          overflow-y-auto
+          transition-transform duration-200 ease-out
+          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        `}
+      >
+        <div className="px-3 mb-3 flex items-center justify-between">
+          <Link
+            href="/admin/dashboard"
+            onClick={onClose}
+            className="flex flex-col gap-0.5"
+          >
+            <span className="text-[10px] uppercase tracking-[0.28em] text-neutral-600">
+              Artifactx
+            </span>
+            <span className="text-sm font-bold text-white">Admin</span>
+          </Link>
+          <button
+            type="button"
+            onClick={onClose}
+            className="md:hidden text-neutral-500 hover:text-white text-lg leading-none px-2 cursor-pointer"
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        {NAV.map((item) =>
+          item.children ? (
+            <div key={item.label} className="flex flex-col">
+              <SectionLabel>{item.label}</SectionLabel>
+              {item.children.map((c) => (
+                <NavLink
+                  key={c.href}
+                  item={c}
+                  pathname={pathname}
+                  indent
+                  onNavigate={onClose}
+                />
+              ))}
+            </div>
+          ) : (
+            <NavLink
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              onNavigate={onClose}
+            />
+          )
+        )}
+      </nav>
+    </>
   );
 }
