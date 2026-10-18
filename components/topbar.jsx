@@ -1,17 +1,27 @@
+import { useState } from "react";
+import { signOutAdmin } from "@/lib/logout";
 import { useRouter } from "next/router";
 import api from "@/lib/api";
 
 export default function Topbar({ admin, onMenuClick }) {
   const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const onLogout = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    setLogoutError("");
     try {
-      await api.post("/admin/logout");
-    } catch {}
-    router.replace("/login");
+      await signOutAdmin(api, (path) => router.replace(path));
+    } catch {
+      setLogoutError("Sign-out failed. Your session may still be active. Please try again.");
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   return (
-    <header className="h-12 border-b border-white/[0.06] bg-ink-900 flex items-center justify-between px-3 md:px-4 shrink-0">
+    <header className="relative h-12 border-b border-white/[0.06] bg-ink-900 flex items-center justify-between px-3 md:px-4 shrink-0">
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
         <button
           type="button"
@@ -41,10 +51,16 @@ export default function Topbar({ admin, onMenuClick }) {
             </span>
             <button
               onClick={onLogout}
-              className="text-neutral-400 hover:text-white cursor-pointer"
+              disabled={signingOut}
+              className="text-neutral-400 hover:text-white cursor-pointer disabled:opacity-50"
             >
-              Sign out
+              {signingOut ? "Signing out…" : "Sign out"}
             </button>
+            {logoutError && (
+              <span role="alert" className="absolute top-full right-3 z-30 mt-2 max-w-xs border border-red-900/60 bg-ink-900 p-3 text-red-300 text-[12px]">
+                {logoutError}
+              </span>
+            )}
           </>
         ) : (
           <span className="text-neutral-700">…</span>
@@ -53,3 +69,4 @@ export default function Topbar({ admin, onMenuClick }) {
     </header>
   );
 }
+
