@@ -29,7 +29,7 @@ const NAV = [
     children: [
       { label: "Featured / Billboard", href: "/admin/billboard" },
       { label: "Recommendations", href: "/admin/recommendations" },
-      { label: "Marketing inputs", href: "/admin/marketing" },
+      { label: "Marketing inputs (retired)", href: "/admin/marketing" },
     ],
   },
   {
@@ -152,3 +152,4 @@ export default function Sidebar({ open = false, onClose }) {
     </>
   );
 }
+

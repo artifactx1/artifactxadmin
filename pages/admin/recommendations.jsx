@@ -3,8 +3,7 @@ import AdminLayout from "@/components/admin-layout";
 import { MonoAddress } from "@/components/data-table";
 import { fetcher } from "@/lib/api";
 
-// Read-only first cut: shows what's currently surfaced and what's available.
-// Drag-to-reorder lands in a follow-up.
+// Retain legacy links, but surface the API's retirement or loading failures.
 export default function Recommendations() {
   const { data: current, error: currentError, isLoading: currentLoading } = useSWR("/getting-recommendation-collection", fetcher);
   const { data: pool, error: poolError, isLoading: poolLoading } = useSWR(
@@ -19,7 +18,8 @@ export default function Recommendations() {
         <Pane title="Available pool" rows={pool?.collections || pool || []} error={poolError} isLoading={poolLoading} />
       </div>
       <p className="mt-4 text-[12px] text-neutral-600">
-        Drag-and-drop reorder + add/remove UI lands in a follow-up. For now this is a read-only view.
+        This legacy view is read-only. Current collection merchandising is managed
+        through Collections and Featured / Billboard.
       </p>
     </AdminLayout>
   );
