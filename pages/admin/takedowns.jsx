@@ -7,10 +7,10 @@ import api, { fetcher } from "@/lib/api";
 export default function Takedowns() {
   const { data, error, isLoading, mutate } = useSWR("/admin/takedowns", fetcher);
 
-  const restoreCollection = async (address) => {
-    if (!confirm(`Restore ${address}? Sets is_deactivated = false.`)) return;
+  const restoreCollection = async (collection) => {
+    if (!confirm(`Restore ${collection.name || collection.address}? Sets is_deactivated = false.`)) return;
     try {
-      await api.patch(`/admin/collections/${address}/flags`, {
+      await api.patch(`/admin/collections/${collection.id}/flags`, {
         is_deactivated: false,
       });
       mutate();
@@ -35,7 +35,7 @@ export default function Takedowns() {
               </td>
               <td className="px-3 py-2">
                 <Link
-                  href={`/admin/collections/${c.address}`}
+                  href={`/admin/collections/${c.id}`}
                   className="text-white hover:underline"
                 >
                   {c.name}
@@ -50,7 +50,7 @@ export default function Takedowns() {
               </td>
               <td className="px-3 py-2 text-right">
                 <button
-                  onClick={() => restoreCollection(c.address)}
+                  onClick={() => restoreCollection(c)}
                   className="px-2 py-0.5 text-[11px] border border-emerald-900/60 text-emerald-300 hover:bg-emerald-900/20 cursor-pointer"
                 >
                   Restore
@@ -122,3 +122,4 @@ const Section = ({ title, rows, children }) => (
     </table>
   </div>
 );
+

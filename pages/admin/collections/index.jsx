@@ -62,16 +62,16 @@ export default function CollectionsList() {
   );
 
   const bulk = async (flag, value, label) => {
-    const addresses = [...selection];
+    const ids = [...selection];
     if (
       !confirm(
-        `${label} ${addresses.length} collection(s)? Bulk action — double-check the selection.`
+        `${label} ${ids.length} collection(s)? Bulk action — double-check the selection.`
       )
     )
       return;
     try {
       const { data: result } = await api.post("/admin/collections/bulk-flags", {
-        addresses,
+        ids,
         flag,
         value,
       });
@@ -193,9 +193,9 @@ export default function CollectionsList() {
           emptyMessage={isLoading ? "Loading…" : "No collections match these filters"}
           selection={selection}
           onSelectionChange={setSelection}
-          selectionKey={(r) => r.address}
+          selectionKey={(r) => r.id}
           onRowClick={(row) => {
-            window.location.href = `/admin/collections/${row.address}`;
+            window.location.href = `/admin/collections/${row.id}`;
           }}
         />
 
@@ -232,3 +232,4 @@ export default function CollectionsList() {
     </AdminLayout>
   );
 }
+

@@ -51,7 +51,7 @@ export default function DropDetail() {
     )
       return;
     try {
-      await api.post(`/admin/drops/${address}/push-live`, { startNow });
+      await api.post(`/admin/drops/${data.drop.id}/push-live`, { startNow });
       mutate();
     } catch (err) {
       alert(err?.response?.data?.error || "Failed");
@@ -204,3 +204,4 @@ const Field = ({ label, children }) => (
     <span className="text-[13px] text-neutral-200">{children ?? "—"}</span>
   </div>
 );
+

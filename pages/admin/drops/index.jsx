@@ -126,7 +126,7 @@ export default function DropsList() {
           rows={data?.drops || []}
           emptyMessage={isLoading ? "Loading…" : "No drops match these filters"}
           onRowClick={(row) => {
-            window.location.href = `/admin/drops/${row.address}`;
+            window.location.href = `/admin/drops/${row.id}`;
           }}
         />
 
@@ -163,3 +163,4 @@ export default function DropsList() {
     </AdminLayout>
   );
 }
+

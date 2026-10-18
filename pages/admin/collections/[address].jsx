@@ -42,7 +42,7 @@ export default function CollectionDetail() {
 
   const updateFlag = async (key, value) => {
     try {
-      await api.patch(`/admin/collections/${address}/flags`, { [key]: value });
+      await api.patch(`/admin/collections/${c.id}/flags`, { [key]: value });
       mutate();
     } catch (err) {
       alert(err?.response?.data?.error || "Update failed");
@@ -153,28 +153,37 @@ export default function CollectionDetail() {
           <p className="text-[12px] text-neutral-600">
             Long ops queue as background jobs and stream progress in System &gt; Background jobs.
           </p>
+          {(c.is_shared_parent || c.partition_strategy) && (
+            <p className="text-[12px] text-amber-300">
+              Whole-contract maintenance is unavailable for shared collections to protect sibling collections.
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <JobButton
               label="Reindex NFTs"
+              disabled={!!c.is_shared_parent || !!c.partition_strategy}
               kind="collection.reindex"
-              params={{ address: c.address, chain: c.network, type: c.type }}
+              params={{ collectionId: c.id, address: c.address, chain: c.network, type: c.type }}
               confirm={`Reindex every NFT for ${c.name}? Inserts are idempotent so this is safe to re-run.`}
             />
             <JobButton
               label="Refresh stats from Alchemy"
+              disabled={!!c.is_shared_parent || !!c.partition_strategy}
               kind="collection.refresh-stats"
-              params={{ address: c.address, network: c.network }}
+              params={{ collectionId: c.id, address: c.address, network: c.network }}
             />
             <JobButton
               label="Refresh metadata for every NFT"
+              disabled={!!c.is_shared_parent || !!c.partition_strategy}
               kind="collection.refresh-metadata"
-              params={{ address: c.address, network: c.network }}
+              params={{ collectionId: c.id, address: c.address, network: c.network }}
               confirm={`Trigger Alchemy refresh for every NFT in ${c.name}? Can take many minutes for large collections.`}
             />
             <JobButton
               label="Cancel all listings"
+              disabled={!!c.is_shared_parent || !!c.partition_strategy}
               kind="collection.cancel-all-listings"
-              params={{ address: c.address }}
+              params={{ collectionId: c.id, address: c.address }}
               confirm={`Cancel every active listing on ${c.name}? Cannot be undone.`}
               danger
             />
@@ -191,7 +200,7 @@ export default function CollectionDetail() {
               Use the Drops module for claim-phase editing and the diagnostics tab.
             </p>
             <button
-              onClick={() => router.push(`/admin/drops/${c.address}`)}
+              onClick={() => router.push(`/admin/drops/${c.id}`)}
               className="px-3 py-1.5 text-[12px] border border-white/[0.06] hover:bg-white/[0.04] cursor-pointer"
             >
               Open in Drops →
@@ -205,9 +214,10 @@ export default function CollectionDetail() {
 
 // Single-click job launcher. Confirms (if asked), POSTs /admin/jobs, then
 // kicks the user over to the jobs page so they can watch progress.
-function JobButton({ label, kind, params, confirm: confirmMsg, danger }) {
+function JobButton({ label, kind, params, confirm: confirmMsg, danger, disabled }) {
   const router = useRouter();
   const onClick = async () => {
+    if (disabled) return;
     if (confirmMsg && !confirm(confirmMsg)) return;
     try {
       await api.post("/admin/jobs", { kind, params });
@@ -219,7 +229,8 @@ function JobButton({ label, kind, params, confirm: confirmMsg, danger }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 text-[12px] border cursor-pointer ${
+      disabled={disabled}
+      className={`disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 text-[12px] border cursor-pointer ${
         danger
           ? "border-red-900/60 text-red-300 hover:bg-red-900/20"
           : "border-white/[0.06] hover:bg-white/[0.04]"
@@ -229,3 +240,4 @@ function JobButton({ label, kind, params, confirm: confirmMsg, danger }) {
     </button>
   );
 }
+
